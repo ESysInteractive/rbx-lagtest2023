@@ -35,7 +35,13 @@ export type EventHandler = typeof(setmetatable({}, {})) & {
 local Loaded = false;
 local EventHandlerInst: EventHandler = nil;
 
+local Players = game:GetService("Players");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local MessagingService = game:GetService("MessagingService");
+type TopicMessage = {
+	Data: string;
+	Sent: number;
+};
 
 local RandomizerModule = require(script:WaitForChild("Randomizer"));
 local Randomizer: typeof(RandomizerModule) = nil;
@@ -203,6 +209,20 @@ function EventHandler.new() : EventHandler
 		
 		-- Client Part Handler Module
 		ClientPartHandler = ClientPartHandlerModule.new();
+
+		local GlobalTopic = Instance.new("RemoteFunction");
+		GlobalTopic.Name = "GlobalTopic";
+		GlobalTopic.Parent = EventStorage;
+
+		MessagingService:SubscribeAsync("GlobalAnnouncement", function(msg: TopicMessage)
+			for _, Player in next, Players:GetPlayers() do
+				GlobalTopic:InvokeClient(Player, {
+					Type = "GlobalAnnouncement",
+					Data = msg.Data,
+					PublishedAt = msg.Sent
+				});
+			end;
+		end);
 		
 		Loaded = true;
 		EventHandlerInst = self;

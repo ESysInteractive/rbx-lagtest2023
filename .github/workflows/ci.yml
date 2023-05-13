@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  ci:
+    name: CI and Deployment
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: true
+
+    - uses: ok-nick/setup-aftman@v0.3.0
+
+    - name: Report tool versions
+      run: rojo --version
+
+    - name: Build
+      run: rojo build -o build.rbxlx
